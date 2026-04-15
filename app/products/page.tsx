@@ -284,10 +284,12 @@ export default function ProductsPage() {
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               <div className="col-span-2">
-                <ImageUpload current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} />
+                <ImageUpload current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
               </div>
               <div className="col-span-2">
-                <button type="submit" disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-semibold transition text-sm disabled:opacity-50 shadow-lg shadow-emerald-500/20">追加する</button>
+                <button type="submit" disabled={loading || imageUploading} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-semibold transition text-sm disabled:opacity-50 shadow-lg shadow-emerald-500/20">
+                  {imageUploading ? "画像アップロード中..." : "追加する"}
+                </button>
               </div>
             </form>
           </div>
