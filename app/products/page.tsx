@@ -333,7 +333,7 @@ export default function ProductsPage() {
 
           {/* Table */}
           <div className="rounded-2xl overflow-hidden" style={GLASS}>
-            <table className="w-full text-base">
+            <table className="w-full text-sm">
               <thead className="border-b border-slate-100">
                 <tr>
                   {barcodeMode && <th className="px-3 py-3 w-32 text-slate-500 font-semibold text-xs text-center uppercase tracking-wide">選択 / 枚数</th>}
@@ -382,16 +382,16 @@ export default function ProductsPage() {
                         <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-300 text-xl">📦</div>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-semibold text-slate-800 text-base">{p.name}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-800">{p.name}</td>
                     <td className="px-4 py-3 text-slate-500 text-sm">
                       <div className="flex flex-col gap-0.5">
                         {p.origin && <span className="text-xs text-emerald-600 font-medium">{p.origin.name}</span>}
                         <span>{p.category?.name || "—"}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right text-slate-800 font-medium text-base">¥{p.price.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right text-slate-800 font-medium">¥{p.price.toLocaleString()}</td>
                     <td className="px-4 py-3 text-right">
-                      <span className={`font-bold text-base ${p.stock <= 5 ? "text-red-500" : "text-slate-800"}`}>{p.stock}</span>
+                      <span className={`font-bold ${p.stock <= 5 ? "text-red-500" : "text-slate-800"}`}>{p.stock}</span>
                     </td>
                     <td className="px-4 py-3 text-slate-400 text-sm font-mono">{p.barcode}</td>
                     {!barcodeMode && (
