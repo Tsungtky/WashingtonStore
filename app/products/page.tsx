@@ -288,14 +288,13 @@ export default function ProductsPage() {
                 <option value="">大分類を選択</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
-              {formParentId && (
-                <select className={`${inputCls} col-span-2`} value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
-                  <option value="">小分類を選択（任意）</option>
-                  {(categories.find(c => String(c.id) === formParentId)?.children ?? []).map(ch => (
-                    <option key={ch.id} value={ch.id}>{ch.name}</option>
-                  ))}
-                </select>
-              )}
+              <select className={`${inputCls} col-span-2`} value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
+                <option value="">小分類を選択（任意）</option>
+                {(formParentId
+                  ? (categories.find(c => String(c.id) === formParentId)?.children ?? [])
+                  : categories.flatMap(c => c.children)
+                ).map(ch => <option key={ch.id} value={ch.id}>{ch.name}</option>)}
+              </select>
               <div className="col-span-2">
                 <ImageUpload current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} />
               </div>
@@ -326,22 +325,23 @@ export default function ProductsPage() {
               </select>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70 text-xs">▾</span>
             </div>
-            {filterParentId && (
-              <div className="relative">
-                <select
-                  className="appearance-none rounded-xl pl-4 pr-9 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
-                  style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.3)", color: "white" }}
-                  value={filterCategory}
-                  onChange={e => setFilterCategory(e.target.value)}
-                >
-                  <option value="" style={{ color: "#1e293b", background: "white" }}>すべての小分類</option>
-                  {(categories.find(c => String(c.id) === filterParentId)?.children ?? []).map(ch => (
-                    <option key={ch.id} value={ch.id} style={{ color: "#1e293b", background: "white" }}>{ch.name}</option>
-                  ))}
-                </select>
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70 text-xs">▾</span>
-              </div>
-            )}
+            <div className="relative">
+              <select
+                className="appearance-none rounded-xl pl-4 pr-9 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
+                style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.3)", color: "white" }}
+                value={filterCategory}
+                onChange={e => setFilterCategory(e.target.value)}
+              >
+                <option value="" style={{ color: "#1e293b", background: "white" }}>すべての小分類</option>
+                {(filterParentId
+                  ? (categories.find(c => String(c.id) === filterParentId)?.children ?? [])
+                  : categories.flatMap(c => c.children)
+                ).map(ch => (
+                  <option key={ch.id} value={ch.id} style={{ color: "#1e293b", background: "white" }}>{ch.name}</option>
+                ))}
+              </select>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70 text-xs">▾</span>
+            </div>
           </div>
 
           {/* Table */}
@@ -444,14 +444,13 @@ export default function ProductsPage() {
                   <option value="">大分類を選択</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
-                {editParentId && (
-                  <select className={`${inputCls} mt-2`} value={editForm.categoryId} onChange={e => setEditForm({ ...editForm, categoryId: e.target.value })}>
-                    <option value="">小分類を選択（任意）</option>
-                    {(categories.find(c => String(c.id) === editParentId)?.children ?? []).map(ch => (
-                      <option key={ch.id} value={ch.id}>{ch.name}</option>
-                    ))}
-                  </select>
-                )}
+                <select className={`${inputCls} mt-2`} value={editForm.categoryId} onChange={e => setEditForm({ ...editForm, categoryId: e.target.value })}>
+                  <option value="">小分類を選択（任意）</option>
+                  {(editParentId
+                    ? (categories.find(c => String(c.id) === editParentId)?.children ?? [])
+                    : categories.flatMap(c => c.children)
+                  ).map(ch => <option key={ch.id} value={ch.id}>{ch.name}</option>)}
+                </select>
               </div>
               <ImageUpload current={editForm.imageUrl || null} onUploaded={url => setEditForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
               {imageUploading && <p className="text-xs text-emerald-600 animate-pulse">画像をアップロード中... 完了まで待ってください</p>}
