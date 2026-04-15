@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     });
     return Response.json({ url: result.secure_url, publicId: result.public_id });
   } catch (e: unknown) {
-    const msg = e instanceof Error ? e.message : String(e);
+    const msg = e instanceof Error ? e.message : typeof e === "object" ? JSON.stringify(e) : String(e);
     return Response.json({ error: msg }, { status: 500 });
   }
 }
