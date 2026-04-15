@@ -97,6 +97,7 @@ function CategoryPanel({ title, items, kind, onRefresh, setError }: {
 export default function CategoriesPage() {
   const [origins, setOrigins] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Item[]>([]);
+  const [subCategories, setSubCategories] = useState<Item[]>([]);
   const [error, setError] = useState("");
 
   const load = async () => {
@@ -104,6 +105,7 @@ export default function CategoriesPage() {
     const data = await res.json();
     setOrigins(data.origins);
     setCategories(data.categories);
+    setSubCategories(data.subCategories);
   };
 
   useEffect(() => { load(); }, []);
@@ -126,9 +128,10 @@ export default function CategoriesPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <CategoryPanel title="大分類" items={origins} kind="origin" onRefresh={load} setError={setError} />
-          <CategoryPanel title="小分類" items={categories} kind="category" onRefresh={load} setError={setError} />
+          <CategoryPanel title="中分類" items={categories} kind="category" onRefresh={load} setError={setError} />
+          <CategoryPanel title="小分類" items={subCategories} kind="subCategory" onRefresh={load} setError={setError} />
         </div>
       </div>
     </div>

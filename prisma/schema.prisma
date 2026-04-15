@@ -19,19 +19,27 @@ model Category {
   products Product[]
 }
 
+model SubCategory {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+}
+
 model Product {
-  id         Int       @id @default(autoincrement())
-  name       String
-  price      Float
-  stock      Int       @default(0)
-  barcode    String    @unique
-  imageUrl   String?
-  createdAt  DateTime  @default(now())
-  deletedAt  DateTime?
-  category   Category? @relation(fields: [categoryId], references: [id])
-  categoryId Int?
-  origin     Origin?   @relation(fields: [originId], references: [id])
-  originId   Int?
+  id            Int          @id @default(autoincrement())
+  name          String
+  price         Float
+  stock         Int          @default(0)
+  barcode       String       @unique
+  imageUrl      String?
+  createdAt     DateTime     @default(now())
+  deletedAt     DateTime?
+  origin        Origin?      @relation(fields: [originId], references: [id])
+  originId      Int?
+  category      Category?    @relation(fields: [categoryId], references: [id])
+  categoryId    Int?
+  subCategory   SubCategory? @relation(fields: [subCategoryId], references: [id])
+  subCategoryId Int?
 
   transactionItems TransactionItem[]
 }

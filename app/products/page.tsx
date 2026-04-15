@@ -4,8 +4,10 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-type Category = { id: number; name: string };
-type Origin = { id: number; name: string };
+type Item = { id: number; name: string };
+type Category = Item;
+type Origin = Item;
+type SubCategory = Item;
 type Product = {
   id: number;
   name: string;
@@ -13,8 +15,9 @@ type Product = {
   stock: number;
   barcode: string;
   imageUrl: string | null;
-  category: Category | null;
   origin: Origin | null;
+  category: Category | null;
+  subCategory: SubCategory | null;
 };
 
 const PAGE_BG = { background: "linear-gradient(135deg, #064e3b 0%, #065f46 45%, #047857 100%)" };
@@ -102,15 +105,17 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [origins, setOrigins] = useState<Origin[]>([]);
-  const [form, setForm] = useState({ name: "", price: "", stock: "", categoryId: "", originId: "", imageUrl: "" });
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [form, setForm] = useState({ name: "", price: "", stock: "", originId: "", categoryId: "", subCategoryId: "", imageUrl: "" });
   const [editProduct, setEditProduct] = useState<Product | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", price: "", stock: "", categoryId: "", originId: "", imageUrl: "" });
+  const [editForm, setEditForm] = useState({ name: "", price: "", stock: "", originId: "", categoryId: "", subCategoryId: "", imageUrl: "" });
   const [loading, setLoading] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const [imageUploading, setImageUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [filterOriginId, setFilterOriginId] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
+  const [filterCategoryId, setFilterCategoryId] = useState("");
+  const [filterSubCategoryId, setFilterSubCategoryId] = useState("");
   const [confirmState, setConfirmState] = useState<{ message: string; onOk: () => void } | null>(null);
 
   // Barcode print state
@@ -131,16 +136,18 @@ export default function ProductsPage() {
   const filtered = products.filter(p => {
     const matchName = p.name.toLowerCase().includes(search.toLowerCase()) || p.barcode.includes(search);
     const matchOrigin = !filterOriginId || String(p.origin?.id) === filterOriginId;
-    const matchCat = !filterCategory || String(p.category?.id) === filterCategory;
-    return matchName && matchOrigin && matchCat;
+    const matchCat = !filterCategoryId || String(p.category?.id) === filterCategoryId;
+    const matchSub = !filterSubCategoryId || String(p.subCategory?.id) === filterSubCategoryId;
+    return matchName && matchOrigin && matchCat && matchSub;
   });
 
   const fetchAll = async () => {
     const [p, c] = await Promise.all([fetch("/api/products"), fetch("/api/categories")]);
     setProducts(await p.json());
     const catData = await c.json();
-    setCategories(catData.categories);
     setOrigins(catData.origins);
+    setCategories(catData.categories);
+    setSubCategories(catData.subCategories);
   };
 
   useEffect(() => { fetchAll(); }, []);
@@ -157,7 +164,7 @@ export default function ProductsPage() {
     e.preventDefault();
     setLoading(true);
     await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-    setForm({ name: "", price: "", stock: "", categoryId: "", originId: "", imageUrl: "" });
+    setForm({ name: "", price: "", stock: "", originId: "", categoryId: "", subCategoryId: "", imageUrl: "" });
     setFormKey(k => k + 1);
     setLoading(false);
     fetchAll();
@@ -165,7 +172,7 @@ export default function ProductsPage() {
 
   const openEdit = (p: Product) => {
     setEditProduct(p);
-    setEditForm({ name: p.name, price: String(p.price), stock: String(p.stock), categoryId: p.category ? String(p.category.id) : "", originId: p.origin ? String(p.origin.id) : "", imageUrl: p.imageUrl || "" });
+    setEditForm({ name: p.name, price: String(p.price), stock: String(p.stock), originId: p.origin ? String(p.origin.id) : "", categoryId: p.category ? String(p.category.id) : "", subCategoryId: p.subCategory ? String(p.subCategory.id) : "", imageUrl: p.imageUrl || "" });
   };
 
   const handleEditSave = async (e: React.FormEvent) => {
@@ -282,8 +289,12 @@ export default function ProductsPage() {
                 {origins.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
               </select>
               <select className={`${inputCls} col-span-2`} value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
-                <option value="">小分類（任意）</option>
+                <option value="">中分類（任意）</option>
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <select className={`${inputCls} col-span-2`} value={form.subCategoryId} onChange={e => setForm({ ...form, subCategoryId: e.target.value })}>
+                <option value="">小分類（任意）</option>
+                {subCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               <div className="col-span-2">
                 <ImageUpload key={formKey} current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
@@ -321,11 +332,23 @@ export default function ProductsPage() {
               <select
                 className="appearance-none rounded-xl pl-4 pr-9 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
                 style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.3)", color: "white" }}
-                value={filterCategory}
-                onChange={e => setFilterCategory(e.target.value)}
+                value={filterCategoryId}
+                onChange={e => setFilterCategoryId(e.target.value)}
+              >
+                <option value="" style={{ color: "#1e293b", background: "white" }}>すべての中分類</option>
+                {categories.map(c => <option key={c.id} value={c.id} style={{ color: "#1e293b", background: "white" }}>{c.name}</option>)}
+              </select>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70 text-xs">▾</span>
+            </div>
+            <div className="relative">
+              <select
+                className="appearance-none rounded-xl pl-4 pr-9 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
+                style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.3)", color: "white" }}
+                value={filterSubCategoryId}
+                onChange={e => setFilterSubCategoryId(e.target.value)}
               >
                 <option value="" style={{ color: "#1e293b", background: "white" }}>すべての小分類</option>
-                {categories.map(c => <option key={c.id} value={c.id} style={{ color: "#1e293b", background: "white" }}>{c.name}</option>)}
+                {subCategories.map(c => <option key={c.id} value={c.id} style={{ color: "#1e293b", background: "white" }}>{c.name}</option>)}
               </select>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70 text-xs">▾</span>
             </div>
@@ -386,7 +409,9 @@ export default function ProductsPage() {
                     <td className="px-4 py-3 text-slate-500 text-sm">
                       <div className="flex flex-col gap-0.5">
                         {p.origin && <span className="text-xs text-emerald-600 font-medium">{p.origin.name}</span>}
-                        <span>{p.category?.name || "—"}</span>
+                        {p.category && <span className="text-xs text-slate-500">{p.category.name}</span>}
+                        {p.subCategory && <span className="text-xs text-slate-400">{p.subCategory.name}</span>}
+                        {!p.origin && !p.category && !p.subCategory && <span>—</span>}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right text-slate-800 font-medium">¥{p.price.toLocaleString()}</td>
@@ -437,8 +462,12 @@ export default function ProductsPage() {
                   {origins.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
                 </select>
                 <select className={`${inputCls} mt-2`} value={editForm.categoryId} onChange={e => setEditForm({ ...editForm, categoryId: e.target.value })}>
-                  <option value="">小分類（任意）</option>
+                  <option value="">中分類（任意）</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+                <select className={`${inputCls} mt-2`} value={editForm.subCategoryId} onChange={e => setEditForm({ ...editForm, subCategoryId: e.target.value })}>
+                  <option value="">小分類（任意）</option>
+                  {subCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <ImageUpload current={editForm.imageUrl || null} onUploaded={url => setEditForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
