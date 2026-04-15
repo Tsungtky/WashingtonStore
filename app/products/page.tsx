@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-type Category = { id: number; name: string; parentId: number | null; children: { id: number; name: string }[] };
+type Category = { id: number; name: string };
+type Origin = { id: number; name: string };
 type Product = {
   id: number;
   name: string;
@@ -13,6 +14,7 @@ type Product = {
   barcode: string;
   imageUrl: string | null;
   category: Category | null;
+  origin: Origin | null;
 };
 
 const PAGE_BG = { background: "linear-gradient(135deg, #064e3b 0%, #065f46 45%, #047857 100%)" };
@@ -99,16 +101,15 @@ function ImageUpload({ current, onUploaded, onUploadingChange }: {
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [form, setForm] = useState({ name: "", price: "", stock: "", categoryId: "", imageUrl: "" });
+  const [origins, setOrigins] = useState<Origin[]>([]);
+  const [form, setForm] = useState({ name: "", price: "", stock: "", categoryId: "", originId: "", imageUrl: "" });
   const [editProduct, setEditProduct] = useState<Product | null>(null);
-  const [editForm, setEditForm] = useState({ name: "", price: "", stock: "", categoryId: "", imageUrl: "" });
+  const [editForm, setEditForm] = useState({ name: "", price: "", stock: "", categoryId: "", originId: "", imageUrl: "" });
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [search, setSearch] = useState("");
-  const [filterParentId, setFilterParentId] = useState("");
+  const [filterOriginId, setFilterOriginId] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
-  const [formParentId, setFormParentId] = useState("");
-  const [editParentId, setEditParentId] = useState("");
   const [confirmState, setConfirmState] = useState<{ message: string; onOk: () => void } | null>(null);
 
   // Barcode print state
@@ -128,21 +129,17 @@ export default function ProductsPage() {
 
   const filtered = products.filter(p => {
     const matchName = p.name.toLowerCase().includes(search.toLowerCase()) || p.barcode.includes(search);
-    let matchCat = true;
-    if (filterCategory) {
-      matchCat = String(p.category?.id) === filterCategory;
-    } else if (filterParentId) {
-      const parent = categories.find(c => String(c.id) === filterParentId);
-      const childIds = parent ? parent.children.map(ch => ch.id) : [];
-      matchCat = childIds.includes(p.category?.id ?? -1) || String(p.category?.id) === filterParentId;
-    }
-    return matchName && matchCat;
+    const matchOrigin = !filterOriginId || String(p.origin?.id) === filterOriginId;
+    const matchCat = !filterCategory || String(p.category?.id) === filterCategory;
+    return matchName && matchOrigin && matchCat;
   });
 
   const fetchAll = async () => {
     const [p, c] = await Promise.all([fetch("/api/products"), fetch("/api/categories")]);
     setProducts(await p.json());
-    setCategories(await c.json());
+    const catData = await c.json();
+    setCategories(catData.categories);
+    setOrigins(catData.origins);
   };
 
   useEffect(() => { fetchAll(); }, []);
@@ -159,20 +156,14 @@ export default function ProductsPage() {
     e.preventDefault();
     setLoading(true);
     await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-    setForm({ name: "", price: "", stock: "", categoryId: "", imageUrl: "" });
+    setForm({ name: "", price: "", stock: "", categoryId: "", originId: "", imageUrl: "" });
     setLoading(false);
     fetchAll();
   };
 
   const openEdit = (p: Product) => {
     setEditProduct(p);
-    let parentId = "";
-    if (p.category) {
-      const parent = categories.find(c => c.children.some(ch => ch.id === p.category!.id));
-      if (parent) parentId = String(parent.id);
-    }
-    setEditParentId(parentId);
-    setEditForm({ name: p.name, price: String(p.price), stock: String(p.stock), categoryId: p.category ? String(p.category.id) : "", imageUrl: p.imageUrl || "" });
+    setEditForm({ name: p.name, price: String(p.price), stock: String(p.stock), categoryId: p.category ? String(p.category.id) : "", originId: p.origin ? String(p.origin.id) : "", imageUrl: p.imageUrl || "" });
   };
 
   const handleEditSave = async (e: React.FormEvent) => {
@@ -284,15 +275,13 @@ export default function ProductsPage() {
               <input className={`${inputCls} col-span-2`} placeholder="商品名" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
               <input className={inputCls} placeholder="価格 (¥)" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
               <input className={inputCls} placeholder="在庫数" type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} required />
-              <select className={`${inputCls} col-span-2`} value={formParentId} onChange={e => { setFormParentId(e.target.value); setForm(f => ({ ...f, categoryId: "" })); }}>
-                <option value="">大分類を選択</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              <select className={`${inputCls} col-span-2`} value={form.originId} onChange={e => setForm({ ...form, originId: e.target.value })}>
+                <option value="">大分類（任意）</option>
+                {origins.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
               </select>
               <select className={`${inputCls} col-span-2`} value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
-                <option value="">小分類を選択（任意）</option>
-                {(categories.find(c => String(c.id) === formParentId)?.children ?? []).map(ch => (
-                  <option key={ch.id} value={ch.id}>{ch.name}</option>
-                ))}
+                <option value="">小分類（任意）</option>
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               <div className="col-span-2">
                 <ImageUpload current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} />
@@ -316,11 +305,11 @@ export default function ProductsPage() {
               <select
                 className="appearance-none rounded-xl pl-4 pr-9 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
                 style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.3)", color: "white" }}
-                value={filterParentId}
-                onChange={e => { setFilterParentId(e.target.value); setFilterCategory(""); }}
+                value={filterOriginId}
+                onChange={e => setFilterOriginId(e.target.value)}
               >
                 <option value="" style={{ color: "#1e293b", background: "white" }}>すべての大分類</option>
-                {categories.map(c => <option key={c.id} value={c.id} style={{ color: "#1e293b", background: "white" }}>{c.name}</option>)}
+                {origins.map(o => <option key={o.id} value={o.id} style={{ color: "#1e293b", background: "white" }}>{o.name}</option>)}
               </select>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70 text-xs">▾</span>
             </div>
@@ -332,9 +321,7 @@ export default function ProductsPage() {
                 onChange={e => setFilterCategory(e.target.value)}
               >
                 <option value="" style={{ color: "#1e293b", background: "white" }}>すべての小分類</option>
-                {(categories.find(c => String(c.id) === filterParentId)?.children ?? []).map(ch => (
-                  <option key={ch.id} value={ch.id} style={{ color: "#1e293b", background: "white" }}>{ch.name}</option>
-                ))}
+                {categories.map(c => <option key={c.id} value={c.id} style={{ color: "#1e293b", background: "white" }}>{c.name}</option>)}
               </select>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70 text-xs">▾</span>
             </div>
@@ -392,7 +379,12 @@ export default function ProductsPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 font-semibold text-slate-800 text-base">{p.name}</td>
-                    <td className="px-4 py-3 text-slate-500 text-sm">{p.category?.name || "—"}</td>
+                    <td className="px-4 py-3 text-slate-500 text-sm">
+                      <div className="flex flex-col gap-0.5">
+                        {p.origin && <span className="text-xs text-emerald-600 font-medium">{p.origin.name}</span>}
+                        <span>{p.category?.name || "—"}</span>
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-right text-slate-800 font-medium text-base">¥{p.price.toLocaleString()}</td>
                     <td className="px-4 py-3 text-right">
                       <span className={`font-bold text-base ${p.stock <= 5 ? "text-red-500" : "text-slate-800"}`}>{p.stock}</span>
@@ -436,15 +428,13 @@ export default function ProductsPage() {
               </div>
               <div>
                 <label className="text-xs font-semibold text-slate-500 mb-1 block">カテゴリ</label>
-                <select className={inputCls} value={editParentId} onChange={e => { setEditParentId(e.target.value); setEditForm(f => ({ ...f, categoryId: "" })); }}>
-                  <option value="">大分類を選択</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                <select className={inputCls} value={editForm.originId} onChange={e => setEditForm({ ...editForm, originId: e.target.value })}>
+                  <option value="">大分類（任意）</option>
+                  {origins.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
                 </select>
                 <select className={`${inputCls} mt-2`} value={editForm.categoryId} onChange={e => setEditForm({ ...editForm, categoryId: e.target.value })}>
-                  <option value="">小分類を選択（任意）</option>
-                  {(categories.find(c => String(c.id) === editParentId)?.children ?? []).map(ch => (
-                    <option key={ch.id} value={ch.id}>{ch.name}</option>
-                  ))}
+                  <option value="">小分類（任意）</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <ImageUpload current={editForm.imageUrl || null} onUploaded={url => setEditForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
