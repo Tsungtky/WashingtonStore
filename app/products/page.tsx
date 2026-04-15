@@ -106,6 +106,7 @@ export default function ProductsPage() {
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [editForm, setEditForm] = useState({ name: "", price: "", stock: "", categoryId: "", originId: "", imageUrl: "" });
   const [loading, setLoading] = useState(false);
+  const [formKey, setFormKey] = useState(0);
   const [imageUploading, setImageUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [filterOriginId, setFilterOriginId] = useState("");
@@ -157,6 +158,7 @@ export default function ProductsPage() {
     setLoading(true);
     await fetch("/api/products", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
     setForm({ name: "", price: "", stock: "", categoryId: "", originId: "", imageUrl: "" });
+    setFormKey(k => k + 1);
     setLoading(false);
     fetchAll();
   };
@@ -284,7 +286,7 @@ export default function ProductsPage() {
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               <div className="col-span-2">
-                <ImageUpload current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
+                <ImageUpload key={formKey} current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
               </div>
               <div className="col-span-2">
                 <button type="submit" disabled={loading || imageUploading} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-semibold transition text-sm disabled:opacity-50 shadow-lg shadow-emerald-500/20">
