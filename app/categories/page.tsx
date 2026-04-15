@@ -33,7 +33,8 @@ export default function CategoriesPage() {
   const handleAddParent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newParent.trim()) return;
-    await fetch("/api/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newParent.trim() }) });
+    const res = await fetch("/api/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newParent.trim() }) });
+    if (!res.ok) { const d = await res.json(); setError(d.error); return; }
     setNewParent("");
     load();
   };
@@ -41,7 +42,8 @@ export default function CategoriesPage() {
   const handleAddChild = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newChild.trim() || !selectedId) return;
-    await fetch("/api/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newChild.trim(), parentId: selectedId }) });
+    const res = await fetch("/api/categories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: newChild.trim(), parentId: selectedId }) });
+    if (!res.ok) { const d = await res.json(); setError(d.error); return; }
     setNewChild("");
     load();
   };
