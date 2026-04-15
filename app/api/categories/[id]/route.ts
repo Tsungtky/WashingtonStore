@@ -9,7 +9,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
 export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const count = await prisma.product.count({ where: { categoryId: Number(id) } });
+  const count = await prisma.product.count({ where: { categoryId: Number(id), deletedAt: null } });
   if (count > 0) {
     return Response.json({ error: `このカテゴリには${count}個の商品があります。先に商品のカテゴリを変更してください。` }, { status: 400 });
   }
