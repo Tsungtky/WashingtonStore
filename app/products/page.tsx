@@ -338,11 +338,11 @@ export default function ProductsPage() {
                 <tr>
                   {barcodeMode && <th className="px-3 py-3 w-32 text-slate-500 font-semibold text-xs text-center uppercase tracking-wide">選択 / 枚数</th>}
                   <th className="px-4 py-3 w-14"></th>
-                  <th className="text-left px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wide">商品名</th>
-                  <th className="text-left px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wide">カテゴリ</th>
-                  <th className="text-right px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wide">価格</th>
-                  <th className="text-right px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wide">在庫</th>
-                  <th className="text-left px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wide">バーコード</th>
+                  <th className="text-left px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wide whitespace-nowrap">商品名</th>
+                  <th className="text-left px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wide whitespace-nowrap">カテゴリ</th>
+                  <th className="text-right px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wide whitespace-nowrap">価格</th>
+                  <th className="text-right px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wide whitespace-nowrap">在庫</th>
+                  <th className="text-left px-4 py-3 text-slate-500 font-semibold text-xs uppercase tracking-wide whitespace-nowrap">バーコード</th>
                   {!barcodeMode && <th className="px-4 py-3"></th>}
                 </tr>
               </thead>
@@ -396,7 +396,7 @@ export default function ProductsPage() {
                     <td className="px-4 py-3 text-slate-400 text-sm font-mono">{p.barcode}</td>
                     {!barcodeMode && (
                       <td className="px-4 py-3">
-                        <div className="flex gap-2 justify-center">
+                        <div className="flex gap-2 justify-center whitespace-nowrap">
                           <button onClick={() => openEdit(p)} className="text-sm font-semibold text-teal-600 bg-teal-50 hover:bg-teal-100 border border-teal-200 hover:border-teal-400 px-3 py-1.5 rounded-lg transition">編集</button>
                           <button onClick={() => handleDelete(p.id)} className="text-sm font-semibold text-red-500 bg-red-50 hover:bg-red-100 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition">削除</button>
                         </div>
