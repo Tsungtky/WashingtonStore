@@ -280,29 +280,31 @@ export default function ProductsPage() {
           {/* Add form */}
           <div className="rounded-2xl p-5 mb-5" style={GLASS}>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">商品を追加</p>
-            <form onSubmit={handleAdd} className="grid grid-cols-2 gap-3">
-              <input className={`${inputCls} col-span-2`} placeholder="商品名" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
-              <input className={inputCls} placeholder="価格 (¥)" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
-              <input className={inputCls} placeholder="在庫数" type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} required />
-              <select className={`${inputCls} col-span-2`} value={form.originId} onChange={e => setForm({ ...form, originId: e.target.value })}>
-                <option value="">大分類（任意）</option>
-                {origins.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
-              </select>
-              <select className={`${inputCls} col-span-2`} value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
-                <option value="">中分類（任意）</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-              <select className={`${inputCls} col-span-2`} value={form.subCategoryId} onChange={e => setForm({ ...form, subCategoryId: e.target.value })}>
-                <option value="">小分類（任意）</option>
-                {subCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-              <div className="col-span-2">
-                <ImageUpload key={formKey} current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
-              </div>
-              <div className="col-span-2">
+            <form onSubmit={handleAdd} className="flex gap-4">
+              <div className="flex flex-col gap-2 flex-1">
+                <input className={inputCls} placeholder="商品名" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required />
+                <div className="flex gap-2">
+                  <input className={inputCls} placeholder="価格 (¥)" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} required />
+                  <input className={inputCls} placeholder="在庫数" type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} required />
+                </div>
+                <select className={inputCls} value={form.originId} onChange={e => setForm({ ...form, originId: e.target.value })}>
+                  <option value="">大分類（任意）</option>
+                  {origins.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                </select>
+                <select className={inputCls} value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
+                  <option value="">中分類（任意）</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+                <select className={inputCls} value={form.subCategoryId} onChange={e => setForm({ ...form, subCategoryId: e.target.value })}>
+                  <option value="">小分類（任意）</option>
+                  {subCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
                 <button type="submit" disabled={loading || imageUploading} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-semibold transition text-sm disabled:opacity-50 shadow-lg shadow-emerald-500/20">
                   {imageUploading ? "画像アップロード中..." : "追加する"}
                 </button>
+              </div>
+              <div className="shrink-0">
+                <ImageUpload key={formKey} current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
               </div>
             </form>
           </div>
@@ -371,7 +373,7 @@ export default function ProductsPage() {
               </thead>
               <tbody>
                 {filtered.length === 0 && (
-                  <tr><td colSpan={barcodeMode ? 8 : 7} className="text-center py-12 text-slate-400">{search || filterCategory ? "検索結果がありません" : "商品がありません"}</td></tr>
+                  <tr><td colSpan={barcodeMode ? 8 : 7} className="text-center py-12 text-slate-400">{search || filterOriginId || filterCategoryId || filterSubCategoryId ? "検索結果がありません" : "商品がありません"}</td></tr>
                 )}
                 {filtered.map(p => (
                   <tr key={p.id} className={`border-t border-slate-100 transition ${barcodeMode && barcodeSelections.has(p.id) ? "bg-teal-50" : "hover:bg-slate-50/80"}`}>

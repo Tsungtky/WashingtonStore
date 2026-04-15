@@ -10,7 +10,7 @@ const GLASS = { background: "rgba(255,255,255,0.93)", backdropFilter: "blur(24px
 const inputCls = "border border-slate-200 rounded-xl px-3 py-2 text-gray-900 bg-white/70 focus:outline-none focus:ring-2 focus:ring-emerald-400 placeholder-slate-400 text-sm w-full";
 
 function CategoryPanel({ title, items, kind, onRefresh, setError }: {
-  title: string; items: Item[]; kind: "origin" | "category"; onRefresh: () => void; setError: (e: string) => void;
+  title: string; items: Item[]; kind: "origin" | "category" | "subCategory"; onRefresh: () => void; setError: (e: string) => void;
 }) {
   const [newName, setNewName] = useState("");
   const [editId, setEditId] = useState<number | null>(null);
