@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-type Category = { id: number; name: string };
+type Category = { id: number; name: string; parentId: number | null; children: { id: number; name: string }[] };
 type Product = {
   id: number;
   name: string;
@@ -270,7 +270,13 @@ export default function ProductsPage() {
               <input className={inputCls} placeholder="在庫数" type="number" value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} required />
               <select className={`${inputCls} col-span-2`} value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
                 <option value="">カテゴリなし</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.map(c => c.children.length > 0 ? (
+                  <optgroup key={c.id} label={c.name}>
+                    {c.children.map(ch => <option key={ch.id} value={ch.id}>{ch.name}</option>)}
+                  </optgroup>
+                ) : (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
               </select>
               <div className="col-span-2">
                 <ImageUpload current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} />
@@ -299,7 +305,13 @@ export default function ProductsPage() {
               >
                 <option value="" style={{ color: "#1e293b", background: "white" }}>すべてのカテゴリ</option>
                 <option value="__none__" style={{ color: "#1e293b", background: "white" }}>カテゴリなし</option>
-                {categories.map(c => <option key={c.id} value={c.id} style={{ color: "#1e293b", background: "white" }}>{c.name}</option>)}
+                {categories.map(c => c.children.length > 0 ? (
+                  <optgroup key={c.id} label={c.name}>
+                    {c.children.map(ch => <option key={ch.id} value={ch.id} style={{ color: "#1e293b", background: "white" }}>{ch.name}</option>)}
+                  </optgroup>
+                ) : (
+                  <option key={c.id} value={c.id} style={{ color: "#1e293b", background: "white" }}>{c.name}</option>
+                ))}
               </select>
               <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/70 text-xs">▾</span>
             </div>
@@ -403,7 +415,13 @@ export default function ProductsPage() {
                 <label className="text-xs font-semibold text-slate-500 mb-1 block">カテゴリ</label>
                 <select className={inputCls} value={editForm.categoryId} onChange={e => setEditForm({ ...editForm, categoryId: e.target.value })}>
                   <option value="">カテゴリなし</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {categories.map(c => c.children.length > 0 ? (
+                    <optgroup key={c.id} label={c.name}>
+                      {c.children.map(ch => <option key={ch.id} value={ch.id}>{ch.name}</option>)}
+                    </optgroup>
+                  ) : (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
                 </select>
               </div>
               <ImageUpload current={editForm.imageUrl || null} onUploaded={url => setEditForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
