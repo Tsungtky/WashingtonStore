@@ -290,10 +290,9 @@ export default function ProductsPage() {
               </select>
               <select className={`${inputCls} col-span-2`} value={form.categoryId} onChange={e => setForm({ ...form, categoryId: e.target.value })}>
                 <option value="">小分類を選択（任意）</option>
-                {(formParentId
-                  ? (categories.find(c => String(c.id) === formParentId)?.children ?? [])
-                  : categories.flatMap(c => c.children)
-                ).map(ch => <option key={ch.id} value={ch.id}>{ch.name}</option>)}
+                {(categories.find(c => String(c.id) === formParentId)?.children ?? []).map(ch => (
+                  <option key={ch.id} value={ch.id}>{ch.name}</option>
+                ))}
               </select>
               <div className="col-span-2">
                 <ImageUpload current={null} onUploaded={url => setForm(f => ({ ...f, imageUrl: url || "" }))} />
@@ -333,10 +332,7 @@ export default function ProductsPage() {
                 onChange={e => setFilterCategory(e.target.value)}
               >
                 <option value="" style={{ color: "#1e293b", background: "white" }}>すべての小分類</option>
-                {(filterParentId
-                  ? (categories.find(c => String(c.id) === filterParentId)?.children ?? [])
-                  : categories.flatMap(c => c.children)
-                ).map(ch => (
+                {(categories.find(c => String(c.id) === filterParentId)?.children ?? []).map(ch => (
                   <option key={ch.id} value={ch.id} style={{ color: "#1e293b", background: "white" }}>{ch.name}</option>
                 ))}
               </select>
@@ -446,10 +442,9 @@ export default function ProductsPage() {
                 </select>
                 <select className={`${inputCls} mt-2`} value={editForm.categoryId} onChange={e => setEditForm({ ...editForm, categoryId: e.target.value })}>
                   <option value="">小分類を選択（任意）</option>
-                  {(editParentId
-                    ? (categories.find(c => String(c.id) === editParentId)?.children ?? [])
-                    : categories.flatMap(c => c.children)
-                  ).map(ch => <option key={ch.id} value={ch.id}>{ch.name}</option>)}
+                  {(categories.find(c => String(c.id) === editParentId)?.children ?? []).map(ch => (
+                    <option key={ch.id} value={ch.id}>{ch.name}</option>
+                  ))}
                 </select>
               </div>
               <ImageUpload current={editForm.imageUrl || null} onUploaded={url => setEditForm(f => ({ ...f, imageUrl: url || "" }))} onUploadingChange={setImageUploading} />
